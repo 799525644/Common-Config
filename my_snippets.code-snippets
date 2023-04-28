@@ -1,0 +1,208 @@
+{
+	"getJSON() by XHR in Promise": {
+		"scope": "javascript,typescript",
+		"prefix": "getjson",
+		"body": [
+			"function getJSON(url) {",
+			"    // 创建一个 promise 对象",
+			"    let promise = new Promise(function(resolve, reject) {",
+			"      let xhr = new XMLHttpRequest();",
+			"      // 新建一个 http 请求",
+			"      xhr.open(\"GET\", url, true);",
+			"      // 设置状态的监听函数",
+			"      xhr.onreadystatechange = function() {",
+			"        if (this.readyState !== 4) return;",
+			"        // 当请求成功或失败时，改变 promise 的状态",
+			"        if (this.status === 200) {",
+			"          resolve(this.response);",
+			"        } else {",
+			"          reject(new Error(this.statusText));",
+			"        }",
+			"      };",
+			"      // 设置错误监听函数",
+			"      xhr.onerror = function() {",
+			"        reject(new Error(this.statusText));",
+			"      };",
+			"      // 设置响应的数据类型",
+			"      xhr.responseType = \"json\";",
+			"      // 设置请求头信息",
+			"      xhr.setRequestHeader(\"Accept\", \"application/json\");",
+			"      // 发送 http 请求",
+			"      xhr.send(null);",
+			"    });",
+			"    return promise;",
+			"  }"
+		],
+		"description": "getJSON() by XHR in Promise"
+	},
+	"ajax by ori XHR": {
+		"scope": "javascript,typescript",
+		"prefix": "ajax",
+		"body": [
+			"const SERVER_URL = \"/server\";",
+			"let xhr = new XMLHttpRequest();",
+			"// 创建 Http 请求",
+			"xhr.open(\"GET\", SERVER_URL, true);",
+			"// 设置状态监听函数",
+			"xhr.onreadystatechange = function() {",
+			"  if (this.readyState !== 4) return;",
+			"  // 当请求成功时",
+			"  if (this.status === 200) {",
+			"    handle(this.response);",
+			"  } else {",
+			"    console.error(this.statusText);",
+			"  }",
+			"};",
+			"// 设置请求失败时的监听函数",
+			"xhr.onerror = function() {",
+			"  console.error(this.statusText);",
+			"};",
+			"// 设置请求头信息",
+			"xhr.responseType = \"json\";",
+			"xhr.setRequestHeader(\"Accept\", \"application/json\");",
+			"// 发送 Http 请求",
+			"xhr.send(null);"
+		],
+		"description": "ajax by ori XHR"
+	},	
+	"handwritten apply": {
+		"prefix": "apply",
+		"body": [
+		  "var age = 10",
+		  "var obj = {",
+		  "  age: 20,",
+		  "}",
+		  "function foo(a, b) {",
+		  "  console.dir(this.age + a + b);",
+		  "}",
+		  "// 只需要把第二个参数改成数组形式就可以了。",
+		  "Function.prototype._apply = function(ctx, array = []) {",
+		  "  const o = ctx == undefined ? window : Object(ctx) // 如果是undefined或者 null 指向window",
+		  "  //给context新增一个独一无二的属性以免覆盖原有属性",
+		  "  const key = Symbol()",
+		  "  o[key] = this",
+		  "  const result = o[key](...array)",
+		  "  delete o[key]",
+		  "  return result",
+		  "}",
+		  "foo(3, 4) // => 17",
+		  "foo._apply(obj, [3, 4]) //=> 27"
+		],
+		"description": "handwritten apply"
+	  },
+	  "handwritten call": {
+		"prefix": "call",
+		"body": [
+		  "Function.prototype._call = function(ctx, ...args) {",
+		  "  const o = ctx == undefined ? window : Object(ctx) // 否则使用 Object() 将上下文包装成对象",
+		  "  //给context新增一个独一无二的属性以免覆盖原有属性",
+		  "  const key = Symbol()",
+		  "  o[key] = this // this就是调用_call的函数foo，即函数foo赋值给了o的一个属性",
+		  "  const result = o[key](...args)",
+		  "  delete o[key]",
+		  "  return result",
+		  "}"
+		],
+		"description": "handwritten call"
+	  },
+	  "handwritten bind": {
+		"prefix": "bind",
+		"body": [
+		  "Function.prototype._bind = function(ctx, ...args) {",
+		  "    // 下面的this就是调用_bind的函数,保存给_self",
+		  "    const _self = this",
+		  "    // bind 要返回一个函数, 就不会立即执行了",
+		  "    const newFn = function(...rest) {",
+		  "      // 调用 call 修改 this 指向",
+		  "      return _self.call(ctx, ...args, ...rest)",
+		  "    }",
+		  "    if (_self.prototype) {",
+		  "      // 复制源函数的prototype给newFn 一些情况下函数没有prototype，比如箭头函数",
+		  "      newFn.prototype = Object.create(_self.prototype);",
+		  "    }",
+		  "    return newFn",
+		  "  }"
+		],
+		"description": "handwritten bind"
+	  },
+	  "deep copy": {
+		"prefix": "deepcopy",
+		"body": [
+		  "// 浅拷贝： 浅拷贝指的是将一个对象的属性值复制到另一个对象，如果有的属性的值为引用类型的话，那么会将这个引用的地址复制给对象，",
+		  "// 浅拷贝可以使用  Object.assign 和展开运算符来实现, ",
+		  "// 深拷贝粗暴法：JSON.parse(JSON.stringify(obj)), ",
+		  "// 拷贝的对象中如果有函数，undefined，symbol，当使用过JSON.stringify()进行处理之后，都会消失。",
+		  "function deepCopy(object) {",
+		  "    if (!object || typeof object !== \"object\") return;",
+		  "    let newObject = Array.isArray(object) ? [] : {};",
+		  "  ",
+		  "    for (let key in object) {",
+		  "      if (object.hasOwnProperty(key)) {",
+		  "        newObject[key] =",
+		  "          typeof object[key] === \"object\" ? deepCopy(object[key]) : object[key];",
+		  "      }",
+		  "    }",
+		  "  ",
+		  "    return newObject;",
+		  "  }"
+		],
+		"description": "deepcopy"
+	  },
+	  "debounce": {
+		"prefix": "debounce",
+		"body": [
+		  "// 连续的事件只需触发一次回调的场合。具体有：",
+		  "// 搜索框搜索输入。只需用户最后一次输入完，再发送请求；",
+		  "// 用户名、手机号、邮箱输入验证；",
+		  "function debounce(fn, delay) {",
+		  "    // timer是一个定时器",
+		  "    let timer = null;",
+		  "    // 返回一个闭包函数，用闭包保存timer确保其不会销毁，重复点击会清理上一次的定时器",
+		  "    return function () {",
+		  "      // 保存事件参数，防止fn函数需要事件参数里的数据",
+		  "      let arg = arguments;",
+		  "      // 调用一次就清除上一次的定时器",
+		  "      clearTimeout(timer);",
+		  "      // 开启这一次的定时器",
+		  "      timer = setTimeout(() => {",
+		  "        // 若不改变this指向，则会指向fn定义环境",
+		  "        fn.apply(this, arg);",
+		  "      }, delay)",
+		  "    }",
+		  "  }"
+		],
+		"description": "debounce"
+	  },
+	  "imageAsync by Promise": {
+		"prefix": "imageAsync",
+		"body": [
+		  "// 用Promise实现图片的异步加载",
+		  "let imageAsync=(url)=>{",
+		  "    return new Promise((resolve,reject)=>{",
+		  "        let img = new Image();",
+		  "        img.src = url;",
+		  "        img.οnlοad=()=>{",
+		  "            console.log(`图片请求成功，此处进行通用操作`);",
+		  "            resolve(image);",
+		  "        }",
+		  "        img.οnerrοr=(err)=>{",
+		  "            console.log(`失败，此处进行失败的通用操作`);",
+		  "            reject(err);",
+		  "        }",
+		  "    })",
+		  "}",
+		  "imageAsync(\"url\").then(()=>{",
+		  "  console.log(\"加载成功\");",
+		  "}).catch((error)=>{",
+		  "  console.log(\"加载失败\");",
+		  "})"
+		],
+		"description": "imageAsync by Promise"
+	  }
+}
+
+
+	  
+
+
+
